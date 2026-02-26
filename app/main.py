@@ -1,6 +1,7 @@
 import sys
 import os
 import zlib
+import hashlib
 
 
 def main():
@@ -31,6 +32,21 @@ def main():
                 content = text.split('\0')[1]
                 # print(content) Change this to print(content, end='') to remove the new line
                 sys.stdout.write(content)
+    elif command == "hash-object":
+        options = sys.argv[2]
+        file = sys.argv[3]
+        if options == "-w":
+            with open(file, "rb") as f:
+                content = f.read()
+                file_hash = hashlib.sha1(content).hexdigest()
+                file_folder = file_hash[:2]
+                file_name = file_hash[2:]
+                os.makedirs(f".git/objects/{file_folder}", exist_ok=True)
+                with open(f".git/objects/{file_folder}/{file_name}", "w") as f:
+                    f.write(zlib.compress(f"blob {len(content)}\0{content}".encode("utf-8")))
+                sys.stdout.write(file_hash)
+
+        
     else:
         raise RuntimeError(f"Unknown command #{command}")
 
