@@ -10,10 +10,6 @@ def main():
     # TODO: Uncomment the code below to pass the first stage
     
     command = sys.argv[1]
-    options = sys.argv[2]
-    SHA = sys.argv[3]
-    SHA_FOLDER = SHA[:2]
-    SHA = SHA[2:]
     if command == "init":
         os.mkdir(".git")
         os.mkdir(".git/objects")
@@ -22,6 +18,10 @@ def main():
             f.write("ref: refs/heads/main\n")
         print("Initialized git directory")
     elif command == "cat-file":
+        options = sys.argv[2]
+        SHA = sys.argv[3]
+        SHA_FOLDER = SHA[:2]
+        SHA = SHA[2:]
         if options == "-p":
             with open(f".git/objects/{SHA_FOLDER}/{SHA}", "rb") as f:
                 compressed_text = f.read()
