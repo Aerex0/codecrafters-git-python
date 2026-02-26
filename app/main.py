@@ -43,7 +43,7 @@ def main():
                 file_name = file_hash[2:]
                 os.makedirs(f".git/objects/{file_folder}", exist_ok=True)
                 with open(f".git/objects/{file_folder}/{file_name}", "w") as f:
-                    f.write(zlib.compress(f"blob {len(content)}\0{content}".encode("utf-8")))
+                    f.write(zlib.compress(f"blob {len(content)}\0{content}"))
                 sys.stdout.write(file_hash)
 
         
