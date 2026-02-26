@@ -18,17 +18,28 @@ def init():
 
 def get_tree_contents(tree_bytes):
     i = 0
-    modes = []
-    names = []
-    SHAs = []
-    contents = tree_bytes.split('\0')[1] # Skip the tree header
-    while i < len(tree_bytes):
-        mode = contents.split(' ')[0]
-        name = contents.split(' ')[1].split('\0')[0].decode()
-        SHAs.append(contents.split(' ')[2][:40])
+    modes, names, SHAs = [], [], []
+
+    header_end = tree_bytes.index(b'\0')
+    i = header_end +1
+
+    while(i < len(tree_bytes)):
+        # mode
+        space = tree_bytes.index(b' ', i)
+        mode = tree_bytes[i:space].decode()
         modes.append(mode)
+
+        # name
+        null_byte = tree_bytes.index(b'\0', space)
+        name = tree_bytes[space+1:null_byte].decode()
         names.append(name)
-        i += len(mode) + len(name) + 41 # 41 = mode length + name length + 1 (space) + 20 (SHA) + 1 (null byte)
+
+        # SHA (20 raw bytes → convert to hex)
+        SHA = tree_bytes[null_byte+1:null_byte+21].hex()
+        SHAs.append(SHA)
+
+        # move to next entry
+        i = null_byte + 21
 
     return  modes, names, SHAs
 
