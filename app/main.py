@@ -3,8 +3,6 @@ import os
 import zlib
 import hashlib
 
-from sqlalchemy import null
-
 def get_fileandfolder(SHA: str):
     folderSHA = SHA[:2]
     fileSHA = SHA[2:]
