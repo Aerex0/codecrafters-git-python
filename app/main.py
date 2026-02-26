@@ -27,8 +27,8 @@ def main():
                 compressed_text = f.read()
                 text = zlib.decompress(compressed_text)
                 text = text.decode("utf-8")
-                size = text.split(b' ')[1].split(b'\0')[0]
-                content = text.split(b' ')[1].split(b'\0')[1]
+                size = text.split(' ')[1].split(b'\0')[0]
+                content = text.split(' ')[1].split(b'\0')[1]
                 print(content)
     else:
         raise RuntimeError(f"Unknown command #{command}")
