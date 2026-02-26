@@ -16,16 +16,21 @@ def init():
         f.write("ref: refs/heads/main\n")
     print("Initialized git directory")
 
-def get_names(tree_bytes):
+def get_tree_contents(tree_bytes):
     i = 0
+    modes = []
     names = []
-    contents = tree_bytes.split('\0')[1]
+    SHAs = []
+    contents = tree_bytes.split('\0')[1] # Skip the tree header
     while i < len(tree_bytes):
+        mode = contents.split(' ')[0]
         name = contents.split(' ')[1].split('\0')[0].decode()
+        SHAs.append(contents.split(' ')[2][:40])
+        modes.append(mode)
         names.append(name)
-        i = i + 1 + 20   # skip SHA (20 bytes)
+        i += len(mode) + len(name) + 41 # 41 = mode length + name length + 1 (space) + 20 (SHA) + 1 (null byte)
 
-    return names
+    return  modes, names, SHAs
 
 def Blob_content():
     options = sys.argv[2]
@@ -72,9 +77,8 @@ def tree():
         if flag == "--name-only":
             with open(f".git/objects/{SHA_FOLDER}/{SHA_FILE}", "rb") as f:
                 compressed_text = f.read()
-                text = zlib.decompress(compressed_text)
-                text = text.decode("utf-8")
-                names = get_names(text)
+                text = zlib.decompress(compressed_text) # No need to decode from bytes
+                modes, names, SHAs = get_tree_contents(text)
                 for name in names:
                     sys.stdout.write(name + "\n")
 
