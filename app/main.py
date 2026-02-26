@@ -38,12 +38,13 @@ def main():
         if options == "-w":
             with open(file, "r") as f:
                 content = f.read()
-                file_hash = hashlib.sha1(content.encode()).hexdigest()
+                header_content = f"blob {len(content)}\0{content}"
+                file_hash = hashlib.sha1(header_content.encode()).hexdigest()
                 file_folder = file_hash[:2]
                 file_name = file_hash[2:]
                 os.makedirs(f".git/objects/{file_folder}", exist_ok=True)
                 with open(f".git/objects/{file_folder}/{file_name}", "wb") as f:
-                    f.write(zlib.compress(f"blob {len(content)}\0{content}".encode("utf-8")))
+                    f.write(zlib.compress(header_content.encode("utf-8")))
                 sys.stdout.write(file_hash)
 
         
