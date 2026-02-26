@@ -28,8 +28,9 @@ def main():
                 text = zlib.decompress(compressed_text)
                 text = text.decode("utf-8")
                 size = text.split(' ')[1].split('\0')[0]
-                content = text.split(' ')[1].split('\0')[1]
-                print(content)
+                content = text.split('\0')[1]
+                # print(content) Change this to print(content, end='') to remove the new line
+                sys.stdout.write(content)
     else:
         raise RuntimeError(f"Unknown command #{command}")
 
