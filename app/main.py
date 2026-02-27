@@ -170,7 +170,7 @@ def commit(*args):
         size = len(content)
         commit_object = "commit " + str(size) + "\0" + content
 
-        tree_hash = hashlib.sha1(commit_object).hexdigest()
+        tree_hash = hashlib.sha1(commit_object.encode("utf-8")).hexdigest()
 
     return tree_hash
 
