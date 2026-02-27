@@ -156,7 +156,8 @@ def main():
         SHA_filehash = create_Blob(options, file)
         sys.stdout.write(SHA_filehash)
     elif command == "ls-tree":
-        tree()
+        SHA_treehash = tree()
+        sys.stdout.write(SHA_treehash)
     elif command == "write-tree":
         write_tree()
     else:
