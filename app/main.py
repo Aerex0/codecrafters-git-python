@@ -2,6 +2,16 @@ import sys
 import os
 import zlib
 import hashlib
+from pathlib import Path
+
+"""
+Permission and type values in the mode field inside a tree object
+100644 - Regular file
+100755 - Executable file
+40000 - Directory (Tree object)
+
+Note that directory mode is 40000, not 040000. Although Git commands like git ls-tree show directory modes as 040000 for readability, the actual mode stored in the tree object is 40000
+"""
 
 def get_fileandfolder(SHA: str):
     folderSHA = SHA[:2]
@@ -43,9 +53,7 @@ def get_tree_contents(tree_bytes):
 
     return  modes, names, SHAs
 
-def Blob_content():
-    options = sys.argv[2]
-    SHA = sys.argv[3]
+def Blob_content(options, SHA):
     SHA_FOLDER, SHA_FILE = get_fileandfolder(SHA)
     if options == "-p":
         with open(f".git/objects/{SHA_FOLDER}/{SHA_FILE}", "rb") as f:
@@ -57,9 +65,7 @@ def Blob_content():
             # print(content) Change this to print(content, end='') to remove the new line
             sys.stdout.write(content)
 
-def create_Blob():
-    options = sys.argv[2]
-    file = sys.argv[3]
+def create_Blob(options,file):
     if options == "-w":
         with open(file, "r") as f:
             content = f.read()
@@ -69,7 +75,8 @@ def create_Blob():
             os.makedirs(f".git/objects/{file_folder}", exist_ok=True)
             with open(f".git/objects/{file_folder}/{file_name}", "wb") as f:
                 f.write(zlib.compress(header_content.encode("utf-8")))
-            sys.stdout.write(file_hash)
+            # sys.stdout.write(file_hash)
+            return file_hash
 
 def tree():
     if(len(sys.argv) == 3):
@@ -94,6 +101,42 @@ def tree():
                     sys.stdout.write(name + "\n")
 
 
+
+def write_tree(directory_path="."):
+    # Convert string path to a Path object
+    path = Path(directory_path)
+    
+    # Git requires tree content to be sorted by name
+    # We use .iterdir() to get all files/folders
+    items = sorted(path.iterdir(), key=lambda x: x.name)
+    
+    content = ""
+    
+    for item in items:
+        # CRITICAL: Always skip the .git directory
+        if item.name == ".git":
+            continue
+            
+        if item.is_file():
+            file_hash = create_Blob("-w", item)
+            content +=(f"100644 {item}\0{file_hash}")
+        elif item.is_dir():
+            dir_hash = write_tree(item)
+            content +=(f"040000 {item}\0{dir_hash}")
+
+    # Create the tree object
+    size = len(content)
+
+    tree_content = f"tree {size}\0{content}"
+
+    tree_hash = hashlib.sha1(tree_content.encode()).hexdigest()
+
+    tree_folder, tree_name = get_fileandfolder(tree_hash)
+    os.makedirs(f".git/objects/{tree_folder}", exist_ok=True) # DOES NOT raise an error in case the object folder already exists
+    with open(f".git/objects/{tree_folder}/{tree_name}", "wb") as f:
+        f.write(zlib.compress(tree_content.encode("utf-8")))
+    return tree_hash
+
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
@@ -104,11 +147,18 @@ def main():
     if command == "init":
         init()
     elif command == "cat-file":
-        Blob_content()
+        options = sys.argv[2]
+        SHA = sys.argv[3]
+        Blob_content(options, SHA)
     elif command == "hash-object":
-        create_Blob()
+        options = sys.argv[2]
+        file = sys.argv[3]
+        SHA_filehash = create_Blob(options, file)
+        sys.stdout.write(SHA_filehash)
     elif command == "ls-tree":
         tree()
+    elif command == "write-tree":
+        write_tree()
     else:
         raise RuntimeError(f"Unknown command #{command}")
 
