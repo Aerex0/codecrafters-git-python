@@ -178,7 +178,6 @@ def commit(*args):
 
 def main():
     print("Logs from your program will appear here!", file=sys.stderr)
-    
     command = sys.argv[1]
     if command == "init":
         init()
@@ -196,7 +195,7 @@ def main():
     elif command == "write-tree":
         SHA_treehash = write_tree()
         sys.stdout.write(SHA_treehash)
-    elif command == "commit":
+    elif command == "commit-tree":
         if(len(sys.argv) == 5):
             commitTree_hash = sys.argv[2]
             option1 = sys.argv[3]
