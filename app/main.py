@@ -169,8 +169,11 @@ def commit(*args):
         )
         size = len(content)
         commit_object = "commit " + str(size) + "\0" + content
-
         tree_hash = hashlib.sha1(commit_object.encode("utf-8")).hexdigest()
+        commit_folder, commit_name = get_fileandfolder(tree_hash)
+        os.makedirs(f".git/objects/{commit_folder}", exist_ok=True) # DOES NOT raise an error in case the object folder already exists
+        with open(f".git/objects/{commit_folder}/{commit_name}", "wb") as f:
+            f.write(zlib.compress(commit_object))
 
     return tree_hash
 
