@@ -134,6 +134,48 @@ def write_tree(directory_path="."):
         f.write(zlib.compress(tree_content))
     return tree_hash
 
+
+def commit(*args):
+
+    if(len(args) == 3):
+        commitTree_hash = args[0]
+        option1 = args[1]
+        option1_value = args[2]
+
+    elif(len(args) == 5):
+        tree_sha = args[0]
+        option1 = args[1]
+        option1_value = args[2]
+        option2 = args[3]
+        option2_value = args[4]
+
+        if(option1 == "-p"):
+            parent_sha = option1_value
+        if(option2 == "-m"):
+            commit_message = option2_value
+
+        name = "John Doe"
+        email = "john@example.com"
+        timestamp = "1234567890" 
+        timezone = "+0000"
+
+        content = (
+            f"tree {tree_sha}\n"
+            f"parent {parent_sha}\n"      
+            f"author {name} <{email}> {timestamp} {timezone}\n"
+            f"committer {name} <{email}> {timestamp} {timezone}\n"
+            "\n"
+            f"{commit_message}\n"
+        )
+        size = len(content)
+        commit_object = "commit " + str(size) + "\0" + content
+
+        tree_hash = hashlib.sha1(commit_object).hexdigest()
+
+    return tree_hash
+
+
+
 def main():
     print("Logs from your program will appear here!", file=sys.stderr)
     
@@ -154,6 +196,21 @@ def main():
     elif command == "write-tree":
         SHA_treehash = write_tree()
         sys.stdout.write(SHA_treehash)
+    elif command == "commit":
+        if(len(sys.argv) == 5):
+            commitTree_hash = sys.argv[2]
+            option1 = sys.argv[3]
+            option1_value = sys.argv[4]
+            commit_hash = commit(commitTree_hash, option1, option1_value)
+            sys.stdout.write(commit_hash)
+        elif(len(sys.argv) == 7):
+            commitTree_hash = sys.argv[2]
+            option1 = sys.argv[3]
+            option1_value = sys.argv[4]
+            option2 = sys.argv[5]
+            option2_value = sys.argv[6]
+            commit_hash = commit(commitTree_hash, option1, option1_value, option2, option2_value)
+            sys.stdout.write(commit_hash)
     else:
         raise RuntimeError(f"Unknown command #{command}")
 
